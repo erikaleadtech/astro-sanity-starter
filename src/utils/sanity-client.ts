@@ -2,21 +2,27 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { loadEnv } from 'vite';
 import { createClient, type ClientConfig, type SanityClient } from '@sanity/client';
 
-const { SANITY_PROJECT_ID, SANITY_DATASET, SANITY_TOKEN, STACKBIT_PREVIEW, SANITY_PREVIEW_DRAFTS } = loadEnv(process.env.NODE_ENV || '', process.cwd(), '');
 const isDev = import.meta.env.DEV;
 const isDeployPreview = process.env.CONTEXT === 'deploy-preview';
+
+// Access environment variables directly
+const SANITY_PROJECT_ID = import.meta.env.SANITY_PROJECT_ID || process.env.SANITY_PROJECT_ID || "ewp1qyix";
+const SANITY_DATASET = import.meta.env.SANITY_DATASET || process.env.SANITY_DATASET || "production";
+const SANITY_TOKEN = import.meta.env.SANITY_TOKEN || process.env.SANITY_TOKEN;
+const STACKBIT_PREVIEW = import.meta.env.STACKBIT_PREVIEW;
+const SANITY_PREVIEW_DRAFTS = import.meta.env.SANITY_PREVIEW_DRAFTS;
+
 const previewDrafts = STACKBIT_PREVIEW?.toLowerCase() === 'true' || SANITY_PREVIEW_DRAFTS?.toLowerCase() === 'true';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export const sanityConfig: ClientConfig = {
-    projectId: SANITY_PROJECT_ID || "ewp1qyix",
-    dataset: SANITY_DATASET || 'production',
-    useCdn: false,
+    projectId: SANITY_PROJECT_ID,
+    dataset: SANITY_DATASET,
+    useCdn: !isDev,
     apiVersion: '2024-01-31',
     token: SANITY_TOKEN,
     perspective: isDev || isDeployPreview || previewDrafts ? 'previewDrafts' : 'published'
